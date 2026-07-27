@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Financeiro 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#F7F5F0;--surface:#FFFFFF;--border:#E8E4DC;--text:#1A1916;--text2:#6B6860;--text3:#A09D96;
+    --green:#2D6A35;--green-bg:#EAF3EB;--red:#8B2020;--red-bg:#FAEAEA;
+    --amber:#7A4A0A;--amber-bg:#FDF3E3;--pink:#8B2050;--pink-bg:#FAEAF2;
+    --blue:#1A4A8B;--blue-bg:#EAF0FA;--purple:#4A2A8B;--purple-bg:#EEE8FA;
+    --teal:#0A5A4A;--teal-bg:#E3F5F0;--leide:#5B2A9B;
+    --radius:10px;--radius-sm:6px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px 16px}
+  h1{font-size:18px;font-weight:600;margin-bottom:4px;letter-spacing:-.3px}
+  .subtitle{font-size:12px;color:var(--text2);margin-bottom:20px;font-family:'DM Mono',monospace}
+  .month-bar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .month-bar label{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
+  select{font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);cursor:pointer}
+  .tabs{display:flex;gap:2px;margin-bottom:20px;overflow-x:auto;padding-bottom:2px}
+  .tab{padding:7px 14px;font-size:12px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .15s}
+  .tab.active{color:var(--text);border-bottom:2px solid var(--text)}
+  .tab:hover:not(.active){color:var(--text)}
+  .section{display:none}.section.active{display:block}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+  .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+  .metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.3px}
+  .metric-value{font-size:20px;font-weight:600;letter-spacing:-.5px}
+  .metric-value.green{color:var(--green)}.metric-value.red{color:var(--red)}.metric-value.amber{color:var(--amber)}.metric-value.pink{color:var(--pink)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+  .card.leide{border-left:3px solid var(--leide)}
+  .card.stella{border-left:3px solid #C44070}
+  .card.credito{border-left:3px solid var(--green)}
+  .card.pessoal{border-left:3px solid var(--amber)}
+  .card-title{font-size:13px;font-weight:600;margin-bottom:4px;letter-spacing:-.2px}
+  .card-note{font-size:11px;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace}
+  .prow{padding:9px 0;border-bottom:1px solid var(--border)}
+  .prow:last-child{border-bottom:none}
+  .prow-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .prow-name{font-size:13px;font-weight:500}
+  .prow-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+  .prow-saldo{font-size:11px;color:var(--red);margin-top:2px;font-family:'DM Mono',monospace}
+  .prow-val{font-size:13px;font-weight:600;white-space:nowrap;padding-top:2px}
+  .pbar-wrap{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .pbar{flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden}
+  .pbar-fill{height:100%;border-radius:3px;transition:width .3s}
+  .pbar-pct{font-size:10px;color:var(--text3);min-width:30px;font-family:'DM Mono',monospace}
+  .total-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;margin-top:4px;border-top:1px solid var(--border)}
+  .total-label{font-size:12px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.3px}
+  .total-val{font-size:14px;font-weight:600}
+  .badge{font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap;font-weight:500}
+  .badge-green{background:var(--green-bg);color:var(--green)}
+  .badge-amber{background:var(--amber-bg);color:var(--amber)}
+  .badge-blue{background:var(--blue-bg);color:var(--blue)}
+  .badge-gray{background:#F0EDE8;color:#5A5750}
+  .badge-purple{background:var(--purple-bg);color:var(--purple)}
+  .badge-pink{background:var(--pink-bg);color:var(--pink)}
+  .badge-teal{background:var(--teal-bg);color:var(--teal)}
+  .irow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+  .irow:last-child{border-bottom:none}
+  .group-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;font-family:'DM Mono',monospace}
+  .dist-item{margin-bottom:12px}
+  .dist-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .dist-val{color:var(--text2)}
+  @media(max-width:500px){.metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<h1>Painel Financeiro</h1>
+<div class="subtitle">Controle mensal 2026 — Mai a Dez</div>
+
+<div class="month-bar">
+  <label>Mês de referência:</label>
+  <select id="mes-sel" onchange="renderAll()">
+    <option value="0">Maio</option><option value="1">Junho</option><option value="2">Julho</option>
+    <option value="3">Agosto</option><option value="4">Setembro</option><option value="5">Outubro</option>
+    <option value="6">Novembro</option><option value="7">Dezembro</option>
+  </select>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('geral')">Geral</button>
+  <button class="tab" onclick="showTab('fixos')">Fixos</button>
+  <button class="tab" onclick="showTab('pessoal')">Pessoal</button>
+  <button class="tab" onclick="showTab('assinaturas')">Assinaturas</button>
+  <button class="tab" onclick="showTab('parcelas')">Parcelamentos</button>
+  <button class="tab" onclick="showTab('tagarela')">Tagarela</button>
+  <button class="tab" onclick="showTab('pendencias')">Pendências</button>
+  <button class="tab" onclick="showTab('variaveis')">Variáveis</button>
+  <button class="tab" onclick="showTab('cirurgia')">Cirurgia</button>
+  <button class="tab" onclick="showTab('stella')">Stella</button>
+</div>
+
+<!-- GERAL -->
+<div id="sec-geral" class="section active">
+  <div class="metrics" id="metrics"></div>
+  <div class="card" id="card-dist"></div>
+</div>
+
+<!-- FIXOS -->
+<div id="sec-fixos" class="section">
+  <div class="card">
+    <div class="card-title">Estrutura fixa mensal</div>
+    <div class="card-note">Moradia, condomínio e internet</div>
+    <div id="list-fixos"></div>
+  </div>
+</div>
+
+<!-- PESSOAL -->
+<div id="sec-pessoal" class="section">
+  <div class="card pessoal">
+    <div class="card-title">Gastos pessoais fixos</div>
+    <div class="card-note">Celular mensal</div>
+    <div id="list-pessoal-fixo"></div>
+  </div>
+  <div class="card pessoal">
+    <div class="card-title">Bem-estar e saúde</div>
+    <div class="card-note">Nutricionista, personal, depilação, unha, Bluefit, Nu Seguro Vida, Amor Saúde</div>
+    <div id="list-pessoal-bem"></div>
+  </div>
+</div>
+
+<!-- ASSINATURAS -->
+<div id="sec-assinaturas" class="section">
+  <div class="card">
+    <div class="card-title">Assinaturas digitais e serviços</div>
+    <div class="card-note">Valores mostrados são o seu custo líquido após créditos de compartilhamento</div>
+    <div id="list-assinaturas"></div>
+  </div>
+</div>
+
+<!-- PARCELAS -->
+<div id="sec-parcelas" class="section">
+  <div class="card">
+    <div class="card-title">Parcelamentos PGFN / RFB / Simples</div>
+    <div class="card-note">Tributários (Tagarela) + PGFN pessoal — veja resumo consolidado na aba Tagarela</div>
+    <div id="list-pgfn"></div>
+  </div>
+  <div class="card leide">
+    <div class="card-title">Cartão Leide</div>
+    <div class="card-note">Galaxy S25 e Pernambucanas</div>
+    <div id="list-leide"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Demais parcelas de compras</div>
+    <div class="card-note">Marisa, Mercado Livre, Kaspersky, Ótica Alaor, Remédios espirituais e outros</div>
+    <div id="list-compras"></div>
+  </div>
+  <div class="card credito">
+    <div class="card-title">Créditos recebidos</div>
+    <div class="card-note">Pensão e abatimentos de repasse</div>
+    <div id="list-creditos"></div>
+  </div>
+  <div class="card" style="border-left:3px solid #5A8A3A">
+    <div class="card-title">Gastos pontuais — Veículo</div>
+    <div class="card-note">Multas, licenciamento e outros pagamentos avulsos</div>
+    <div id="list-pontuais"></div>
+  </div>
+</div>
+
+<!-- TAGARELA -->
+<div id="sec-tagarela" class="section">
+  <div class="metrics" id="tagarela-metrics"></div>
+  <div class="card" style="border-left:3px solid #993C1D">
+    <div class="card-title">Parcelamentos tributários</div>
+    <div class="card-note">PGFN, RFB e Simples Nacional — empresa</div>
+    <div id="list-tag-pgfn"></div>
+  </div>
+  <div class="card" style="border-left:3px solid #993C1D">
+    <div class="card-title">Custos profissionais fixos</div>
+    <div class="card-note">Contador e GPS — despesas fixas da atividade</div>
+    <div id="list-tag-prof"></div>
+  </div>
+</div>
+
+<!-- PENDÊNCIAS SIMPLES -->
+<div id="sec-pendencias" class="section">
+  <div class="metrics" id="pend-metrics"></div>
+  <div class="card" style="border-left:3px solid #7A4A0A">
+    <div class="card-title">Pendências — Simples Nacional</div>
+    <div class="card-note">7% sobre DGBB, Mais Goiás e Escola de Gente · não soma aos gastos do painel</div>
+    <div id="list-pendencias"></div>
+  </div>
+  <div class="card" style="border-left:3px solid #8B2020">
+    <div class="card-title">Protestos — Receita Federal</div>
+    <div class="card-note">Valores em protesto · não somam aos gastos do painel</div>
+    <div id="list-protestos"></div>
+  </div>
+  <div class="card" style="background:var(--bg)">
+    <div class="card-title" style="font-size:12px;color:var(--text2)">Composição da base de cálculo</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.8">
+      <strong>Jan:</strong> DGBB R$ 8.000 + Escola de Gente R$ 1.250<br>
+      <strong>Fev:</strong> + Mais Goiás R$ 3.333,33<br>
+      <strong>Mar em diante:</strong> + Mais Goiás R$ 5.000 (mai: +R$ 300 extra)
+    </div>
+  </div>
+</div>
+
+<!-- VARIÁVEIS -->
+<div id="sec-variaveis" class="section">
+  <div class="card">
+    <div class="card-title">Gastos variáveis do mês</div>
+    <div class="card-note">Registre aqui gastos que não são fixos nem parcelados — mercado, farmácia, transporte, lazer, etc.</div>
+    <div id="var-form" style="margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input id="var-desc" type="text" placeholder="Descrição" style="font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+        <select id="var-cat" style="font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+          <option>Alimentação</option>
+          <option>Farmácia</option>
+          <option>Transporte</option>
+          <option>Lazer</option>
+          <option>Saúde</option>
+          <option>Vestuário</option>
+          <option>Casa</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px">
+        <input id="var-val" type="number" placeholder="Valor (R$)" step="0.01" style="font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+        <select id="var-cartao" style="font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+          <option value="">Sem cartão / dinheiro</option>
+          <option value="Nubank">Nubank</option>
+          <option value="Neo">Neo</option>
+          <option value="MercadoLivre">Mercado Livre</option>
+          <option value="Leide">Leide</option>
+        </select>
+        <button onclick="addVariavel()" style="font-family:inherit;font-size:13px;padding:7px 16px;background:var(--text);color:var(--surface);border:none;border-radius:6px;cursor:pointer;white-space:nowrap">+ Adicionar</button>
+      </div>
+    </div>
+    <div id="list-variaveis"></div>
+    <div id="var-total-row"></div>
+  </div>
+  <div class="card" style="background:var(--bg)">
+    <div class="card-title" style="font-size:12px;color:var(--text2)">Como usar</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.6">
+      Registre qualquer gasto que aconteceu mas não é recorrente nem está em parcelas. Ex: mercado da semana, consulta médica avulsa, Uber, jantar fora, presente. Os totais são contados por mês no seletor acima.
+    </div>
+  </div>
+</div>
+
+<!-- CIRURGIA -->
+<div id="sec-cirurgia" class="section">
+  <div class="metrics" id="cir-metrics"></div>
+  <div class="card" style="border-left:3px solid #C44070">
+    <div class="card-title">💉 Acordo de pagamento — Cirurgia</div>
+    <div class="card-note">Total: R$ 34.900,00 · Quitação até 01/05/2027</div>
+    <div id="list-cirurgia"></div>
+  </div>
+</div>
+
+<!-- STELLA -->
+<div id="sec-stella" class="section">
+  <div class="metrics" id="stella-metrics"></div>
+  <div class="card stella">
+    <div class="card-title">Custo líquido — Stella</div>
+    <div class="card-note">Descontada a pensão do pai (R$ 486/mês)</div>
+    <div id="list-stella-resumo"></div>
+  </div>
+  <div class="card stella">
+    <div class="card-title">Recorrentes — Stella</div>
+    <div id="list-stella-rec"></div>
+  </div>
+</div>
+
+<script>
+const M=['Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const fmt=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pensao=486;
+// Renda mensal por mês [Mai..Dez]
+// Mai: 8000+5000+300+1250 = 14550
+// Jun: 8000+3000+1250 = 12250
+// Jul–Dez: 8000+1250 = 9250
+const rendas=[14550, 12250, 9250, 9250, 9250, 9250, 9250, 9250];
+const rendaFixa=m=>m!==undefined?rendas[m]:rendas[0];
+
+// PGFN — parcAbril = nº parcela em abril; maio = parcAbril+1
+const pgfn=[
+  {nome:'GDF',           parcAbril:2,  total:22, val:123.26,encerra:null},
+  {nome:'PGFN 7x9',      parcAbril:7,  total:9,  val:45.83, encerra:1},
+  {nome:'PGFN 4x10',     parcAbril:4,  total:10, val:146.66,encerra:5},
+  {nome:'PGFN 7x35',     parcAbril:7,  total:35, val:174.23,encerra:null},
+  {nome:'PGFN 4x65',     parcAbril:4,  total:65, val:47.03, encerra:null},
+  {nome:'PGFN pessoal',  parcAbril:11, total:60, val:220, encerra:null, nota:'valor reajustado mensalmente', dinamicoPes:true},
+  {nome:'RFB 6x10',      parcAbril:6,  total:10, val:214.83,encerra:3},
+  {nome:'Simples 16x60', parcAbril:16, total:60, val:166.49,encerra:null},
+];
+const pNum=(p,m)=>p.parcAbril===null?null:p.parcAbril+1+m;
+const pAtivo=(p,m)=>{
+  if(p.encerra!==null&&m>p.encerra)return false;
+  if(p.total!==null&&pNum(p,m)>p.total)return false;
+  return true;
+};
+const pSaldo=(p,m)=>p.total===null?null:Math.max(0,p.total-pNum(p,m)+1)*p.val;
+const pProg=(p,m)=>(!p.total||!p.parcAbril)?null:Math.min(100,Math.round(((pNum(p,m)-1)/p.total)*100));
+
+// PGFN Pessoal — correção de 1,01% ao mês sobre parcela e saldo
+// Mai (m=0) = parcela 12, valor R$ 221,22, saldo após = R$ 9.227,98
+// Jul (m=2) = valor real pago R$ 225,52
+const CORR=1.0101;
+const pgfnPesMaioVal=221.22;
+const pgfnPesMaioSaldo=9227.98;
+const pgfnPesValores={2:225.52}; // valores reais pagos por índice de mês
+function pgfnPesVal(m){ return pgfnPesValores[m]!==undefined?pgfnPesValores[m]:parseFloat((pgfnPesMaioVal*Math.pow(CORR,m)).toFixed(2)); }
+function pgfnPesSaldo(m){
+  let s=pgfnPesMaioSaldo;
+  for(let i=1;i<=m;i++) s=s*CORR-pgfnPesVal(i);
+  return parseFloat(Math.max(0,s).toFixed(2));
+}
+function pgfnPesProg(m){ return Math.min(100,Math.round(((12+m)/60)*100)); }
+
+// Cartão Leide — parcAbril = nº parcela em abril (mesmo sistema das demais)
+const leide=[
+  {nome:'Galaxy S25',        parcAbril:2, total:10, val:413.10, cartao:'Leide'},
+  {nome:'Pernambucanas 10x', parcAbril:1, total:10, val:47.00,  cartao:'Leide'},
+  {nome:'Pernambucanas 6x',  parcAbril:0, total:6,  val:20.00,  cartao:'Leide'},
+];
+
+// Demais compras — parcAbril = nº parcela em abril (maio = parcAbril+1)
+// cartao: Nubank | Neo | MercadoLivre | próprio
+const compras=[
+  // Nubank
+  {nome:'Marisa',             parcAbril:0, total:3,  val:25.34,  cartao:'Nubank'},
+  {nome:'Mercado Livre',      parcAbril:0, total:3,  val:132.48, cartao:'Nubank'},
+  {nome:'Kaspersky',          parcAbril:2, total:6,  val:14.65,  cartao:'Nubank', encerraM:2},
+  {nome:'Ótica Alaor',        parcAbril:7, total:10, val:100.00, cartao:'Nubank', quitado:'Jul/2026'},
+  {nome:'Amazon',             parcAbril:0, total:7,  val:57.03,  cartao:'Nubank'},
+  {nome:'Amazon Marketplace', parcAbril:2, total:6,  val:30.60,  cartao:'Nubank'},
+  {nome:'Mercado Livre (2)',  parcAbril:1, total:2,  val:34.17,  cartao:'Nubank'},
+  {nome:'Amazon Andrezasa',   parcAbril:1, total:4,  val:37.14,  cartao:'Nubank'},
+  {nome:'Shopee Estiloaroma', parcAbril:0, total:4,  val:21.89,  cartao:'Nubank'},
+  {nome:'Shopee Nanna Mia',   parcAbril:0, total:3,  val:46.38,  cartao:'Nubank'},
+  {nome:'Shopee Tintas',      parcAbril:0, total:3,  val:25.92,  cartao:'Nubank'},
+  {nome:'Raia Drogasil',      parcAbril:0, total:3,  val:64.28,  cartao:'Nubank'},
+  {nome:'Amazon BR',          parcAbril:4, total:6,  val:45.66,  cartao:'Nubank'},
+  {nome:'Viagem Caldas',      parcAbril:0, total:1,  val:180.00, cartao:'Nubank'},
+  {nome:'Carro',              parcAbril:0, total:2,  val:195.00, cartao:'Nubank'},
+  {nome:'RD Saúde',           parcAbril:0, total:2,  val:110.85, cartao:'Nubank'},
+  // Nubank — novos da fatura de abril
+  {nome:'Inovar Cosméticos',  parcAbril:2, total:3,  val:34.03,  cartao:'Nubank'},
+  {nome:'Clínica Radiológica',parcAbril:2, total:3,  val:166.66, cartao:'Nubank'},
+  {nome:'Peça Rara',          parcAbril:1, total:2,  val:117.80, cartao:'Nubank'},
+  {nome:'iFood (2x)',         parcAbril:1, total:2,  val:38.54,  cartao:'Nubank'},
+  {nome:'iFood (2x) b',       parcAbril:1, total:2,  val:27.99,  cartao:'Nubank'},
+  {nome:'iFood (2x) c',       parcAbril:0, total:2,  val:86.29,  cartao:'Nubank'},
+  {nome:'Amazon Brasil',      parcAbril:0, total:2,  val:69.49,  cartao:'Nubank'},
+  // Remédios espirituais: começa em junho (m=1), 5 parcelas de R$100
+  {nome:'Remédios espirituais', iniciaM:1,   total:5,  val:100.00, cartao:null},
+  // Compras de agosto (fatura ago) — iniciaM calculado pela parcela informada
+  // à vista (total=1, iniciaM=3)
+  {nome:'Supermercado Brasil', iniciaM:3, total:1, val:88.43,  cartao:'Nubank'},
+  {nome:'Natura',              iniciaM:3, total:1, val:68.80,  cartao:'Nubank'},
+  {nome:'Drogasil (à vista)',  iniciaM:3, total:1, val:82.79,  cartao:'Nubank'},
+  {nome:'iFood 3/3',           iniciaM:1, total:3, val:55.00,  cartao:'Nubank'},
+  {nome:'Shopee 3/3 a',        iniciaM:1, total:3, val:28.47,  cartao:'Nubank'},
+  {nome:'Drogasil 3/3',        iniciaM:1, total:3, val:49.04,  cartao:'Nubank'},
+  {nome:'Mercado Livre 2/2 a', iniciaM:2, total:2, val:9.65,   cartao:'Nubank'},
+  {nome:'Mercado Livre 2/2 b', iniciaM:2, total:2, val:21.05,  cartao:'Nubank'},
+  {nome:'Mercado Livre 3/3 a', iniciaM:1, total:3, val:62.94,  cartao:'Nubank'},
+  {nome:'Mercado Livre 3/3 b', iniciaM:1, total:3, val:40.91,  cartao:'Nubank'},
+  {nome:'Mercado Livre 3/3 c', iniciaM:1, total:3, val:66.36,  cartao:'Nubank'},
+  {nome:'Shopee 3/3 b',        iniciaM:1, total:3, val:24.51,  cartao:'Nubank'},
+  // parcelados com início identificado pela parcela
+  {nome:'Drogasil 1/3',        iniciaM:3, total:3, val:46.22,  cartao:'Nubank'},
+  {nome:'Shopee 2/4',          iniciaM:2, total:4, val:118.66, cartao:'Nubank'},
+  {nome:'Amazon 2/5',          iniciaM:2, total:5, val:31.17,  cartao:'Nubank'},
+  {nome:'Amazon 4/6',          iniciaM:0, total:6, val:80.40,  cartao:'Nubank'},
+  {nome:'Havan 2/5',           iniciaM:2, total:5, val:56.98,  cartao:'Nubank'},
+  {nome:'Scrita Azul 2/3',     iniciaM:2, total:3, val:31.40,  cartao:'Nubank'},
+  {nome:'Amazon 3/4',          iniciaM:1, total:4, val:34.34,  cartao:'Nubank'},
+  {nome:'Clube de Auto 3/4',   iniciaM:1, total:4, val:66.67,  cartao:'Nubank'},
+  {nome:'Shopee 1/3 a',        iniciaM:3, total:3, val:62.92,  cartao:'Nubank'},
+  {nome:'Shopee 1/3 b',        iniciaM:3, total:3, val:76.20,  cartao:'Nubank'},
+  {nome:'Mercado Livre 3/6',   iniciaM:1, total:6, val:23.33,  cartao:'Nubank'},
+  {nome:'Mercado Livre 3/4',   iniciaM:1, total:4, val:8.49,   cartao:'Nubank'},
+];
+// parcAbril=0 → abril foi a 1ª parcela → maio é a 2ª
+// iniciaM: mês (0=Mai) em que começa (para itens sem histórico em abril)
+const cAtivo=(c,m)=>{
+  const base=c.iniciaM!==undefined?c.iniciaM:0;
+  const pn=m-base+1;
+  return pn>=1&&pn<=c.total;
+};
+const cPNum=(c,m)=>{
+  if(c.iniciaM!==undefined) return Math.min(m-c.iniciaM+1,c.total);
+  return Math.min(c.parcAbril+1+m,c.total);
+};
+const cSaldo=(c,m)=>{
+  const pn=cPNum(c,m);
+  return Math.max(0,c.total-pn+1)*c.val;
+};
+const cProg=(c,m)=>{
+  if(c.iniciaM!==undefined){
+    const pn=m-c.iniciaM+1;
+    return Math.min(100,Math.round(((pn-1)/c.total)*100));
+  }
+  return Math.min(100,Math.round(((c.parcAbril+m)/c.total)*100));
+};
+
+// Abatimentos detalhados [Mai..Dez]
+const abatimentos=[
+  {desc:'Corte de cabelo Miguel', vals:[55,    55,    0,0,0,0,0,0]},
+  {desc:'Conserto bolsa',         vals:[20,     0,    0,0,0,0,0,0]},
+  {desc:'Conserto calça',         vals:[60,     0,    0,0,0,0,0,0]},
+  {desc:'Vit D Leide',            vals:[ 0,    48,    0,0,0,0,0,0]},
+  {desc:'Ultrafarma',             vals:[ 0,  96.80,   0,0,0,0,0,0]},
+  {desc:'Celular — pai da Stella',  vals:[ 0,  100,   100,100,100,100,100,0], previsto:true},
+  {desc:'Freela — Escola de Gente', vals:[ 0,  450,     0,  0,  0,  0,  0,0], previsto:true},
+  {desc:'INSS',                      vals:[ 0, 3888,     0,  0,  0,  0,  0,0], previsto:true},
+  {desc:'Remédios espirituais — Leide', vals:[0, 50, 50, 50, 50, 50, 0, 0], previsto:true},
+  {desc:'Remédio — Miguel',             vals:[0,  0, 25.09, 0,  0,  0, 0, 0]},
+  {desc:'Leide — acerto agosto',        vals:[0,  0,  0, 80,  0,  0, 0, 0]},
+  {desc:'Drogasil — abat. ago',         vals:[0,  0,  0,138.66,0, 0, 0, 0]},
+  {desc:'Frajola — abat. ago',          vals:[0,  0,  0,105,   0, 0, 0, 0]},
+];
+const pensaoVals=[486,486,486,486,486,486,486,486];
+
+// Gastos pontuais — [Mai..Dez], status: 'pago' | 'pendente'
+// vencMes: índice do mês de vencimento (0=Mai)
+const pontuais=[
+  // Veículo
+  {nome:'Multa — Fiesta',              val:303.15,  vencMes:0, pago:true, data:'15/05/2026', cat:'Veículo'},
+  {nome:'Licenciamento — Fiesta',      val:274.61,  vencMes:5, pago:false,data:'15/10/2026', cat:'Veículo'},
+  // Cirurgia
+  {nome:'Entrada — Cirurgia',          val:3490.00, vencMes:1, pago:true, data:'26/06/2026', cat:'Saúde'},
+  {nome:'Cirurgia — parcela 1/11',     val:500.00,  vencMes:2, pago:true, data:'15/07/2026', cat:'Saúde'},
+  // Outros Jul
+  {nome:'Internet — Julho',            val:100.00,  vencMes:2, pago:true, data:'Jul/2026',   cat:'Moradia'},
+  {nome:'PGFN pessoal — Julho',        val:225.52,  vencMes:2, pago:true, data:'15/07/2026', cat:'Profissional'},
+  {nome:'Domínio Agenda que Funciona', val:40.00,   vencMes:2, pago:true, data:'Jul/2026',   cat:'Profissional'},
+  // PGFN/RFB/Simples — Maio (15/05)
+  {nome:'GDF — Mai (3/22)',            val:123.26,  vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'PGFN 7x9 — Mai (8/9)',        val:45.83,   vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x10 — Mai (5/10)',      val:146.66,  vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'PGFN 7x35 — Mai (8/35)',      val:174.23,  vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x65 — Mai (5/65)',      val:47.03,   vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'RFB 6x10 — Mai (7/10)',       val:214.83,  vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  {nome:'Simples 16x60 — Mai (17/60)', val:166.49,  vencMes:0, pago:true, data:'15/05/2026', cat:'Tagarela'},
+  // PGFN/RFB/Simples — Junho (15/06)
+  {nome:'GDF — Jun (4/22)',            val:123.26,  vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'PGFN 7x9 — Jun (9/9)',        val:45.83,   vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x10 — Jun (6/10)',      val:146.66,  vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'PGFN 7x35 — Jun (9/35)',      val:174.23,  vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x65 — Jun (6/65)',      val:47.03,   vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'RFB 6x10 — Jun (8/10)',       val:214.83,  vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  {nome:'Simples 16x60 — Jun (18/60)', val:166.49,  vencMes:1, pago:true, data:'15/06/2026', cat:'Tagarela'},
+  // PGFN/RFB/Simples — Julho (15/07)
+  {nome:'GDF — Jul (5/22)',            val:178.31,  vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x10 — Jul (7/10)',      val:133.74,  vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+  {nome:'PGFN 7x35 — Jul (10/35)',     val:179.62,  vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+  {nome:'PGFN 4x65 — Jul (7/65)',      val:46.32,   vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+  {nome:'RFB 6x10 — Jul (9/10)',       val:221.50,  vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+  {nome:'Simples 16x60 — Jul (19/60)', val:193.74,  vencMes:2, pago:true, data:'15/07/2026', cat:'Tagarela'},
+];
+
+const fixos=[
+  {nome:'Moradia',val:3000,cat:'Moradia'},{nome:'Condomínio/extra',val:165,cat:'Moradia'},
+  {nome:'Internet',val:100,cat:'Moradia'},
+];
+const pessoalFixo=[{nome:'Celular',val:65,cat:'Comunicação'}];
+const pessoalBem=[
+  {nome:'Nutricionista',val:300,cat:'Saúde'},{nome:'Personal',val:120,cat:'Saúde'},
+  {nome:'Depilação',val:150,cat:'Estética'},{nome:'Unha',val:80,cat:'Estética'},
+  {nome:'Bluefit',val:159.9,cat:'Saúde'},{nome:'Nu Seguro Vida',val:69.82,cat:'Seguro'},
+  {nome:'Amor Saúde',val:31,cat:'Saúde'},
+];
+
+// Câmbio USD→BRL usado no mês (atualizar conforme fatura)
+const usdBrl=5.00;
+// ChatGPT: 20 USD total — créditos: Fábio R$25, Paloma R$25, Luana R$25 → saldo seu = total - 75
+const chatgptTotal=()=>parseFloat((20*usdBrl).toFixed(2));
+const chatgptMeu=()=>parseFloat(Math.max(0,chatgptTotal()-75).toFixed(2));
+
+// Microsoft: R$60 total, crédito Luana R$15 → seu custo = R$45
+const microsoftMeu=60-15;
+
+const assinaturas=[
+  {nome:'Microsoft',            val:microsoftMeu, cat:'Software', nota:'R$ 60 total · Luana paga R$ 15'},
+  {nome:'Amazon Prime',         val:19.9,          cat:'Streaming'},
+  {nome:'ChatGPT (20 USD)',     val:0,             cat:'Software', dinamico:true},
+  {nome:'Canva',                val:35,            cat:'Software'},
+  {nome:'Google One',           val:4.5,           cat:'Software'},
+  {nome:'CapCut',               val:65.9,          cat:'Software',    encerraM:1},
+  {nome:'iFood Club',           val:7.95,          cat:'Alimentação'},
+  {nome:'Meli+',                val:19.9,          cat:'Streaming',   mudaM:2, valAntes:9.9},
+  {nome:'Sesc',                 val:28,            cat:'Saúde',       encerraM:1},
+  {nome:'Sindicato Jornalista', val:60,            cat:'Profissional', encerraM:0},
+  {nome:'Netflix',              val:20.9,          cat:'Streaming'},
+  {nome:'ChatGPT One',          val:43.09,         cat:'Software'},
+  {nome:'Claude',               val:110,           cat:'Software'},
+];
+const stellaRec=[
+  {nome:'Vitaminas e Remédios',val:162.98,cat:'Saúde'},{nome:'Pomada',val:20,cat:'Saúde'},
+  {nome:'Lencinho',val:25,cat:'Higiene'},{nome:'Fraldas',val:120,cat:'Higiene'},
+  {nome:'Leite',val:100,cat:'Alimentação'},{nome:'Sabonete',val:19,cat:'Higiene'},
+];
+
+const getMes=()=>parseInt(document.getElementById('mes-sel').value);
+const totalCred=m=>pensaoVals[m]+abatimentos.reduce((s,a)=>s+(a.vals[m]||0),0);
+const totalPgfn=m=>pgfn.reduce((s,p)=>pAtivo(p,m)?s+(p.dinamicoPes?pgfnPesVal(m):p.val):s,0);
+const totalLeide=m=>leide.reduce((s,c)=>cAtivo(c,m)?s+c.val:s,0);
+const totalComp=m=>compras.reduce((s,c)=>cAtivo(c,m)?s+c.val:s,0);
+const totalAssin=m=>{
+  const mes=m!==undefined?m:getMes();
+  return assinaturas.reduce((s,a)=>{
+    if(a.encerraM!==undefined&&mes>a.encerraM)return s;
+    const val=a.dinamico?chatgptMeu():(a.mudaM!==undefined&&mes>=a.mudaM?a.val:a.mudaM!==undefined?a.valAntes:a.val);
+    return s+val;
+  },0);
+};
+const totalFixos=()=>fixos.reduce((s,f)=>s+f.val,0);
+const totalPes=()=>[...pessoalFixo,...pessoalBem].reduce((s,p)=>s+p.val,0);
+const totalPontuais=m=>pontuais.filter(p=>p.vencMes===m&&!p.pago).reduce((s,p)=>s+p.val,0);
+const totalStellaG=m=>stellaRec.reduce((s,i)=>s+i.val,0);
+const totalStellaL=m=>Math.max(0,totalStellaG(m)-pensao);
+
+// Gastos variáveis — armazenados por mês [0=Mai..7=Dez]
+// cada item: {desc, cat, val, cartao, mes}
+let variaveis=[];
+try{const s=localStorage.getItem('fin_variaveis');if(s)variaveis=JSON.parse(s);}catch(e){}
+function saveVar(){try{localStorage.setItem('fin_variaveis',JSON.stringify(variaveis));}catch(e){}}
+
+function addVariavel(){
+  const desc=document.getElementById('var-desc').value.trim();
+  const cat=document.getElementById('var-cat').value;
+  const val=parseFloat(document.getElementById('var-val').value);
+  const cartao=document.getElementById('var-cartao').value;
+  const m=getMes();
+  if(!desc||isNaN(val)||val<=0)return;
+  variaveis.push({desc,cat,val,cartao,mes:m});
+  saveVar();
+  document.getElementById('var-desc').value='';
+  document.getElementById('var-val').value='';
+  renderVariaveis();
+}
+
+function delVariavel(i){
+  variaveis.splice(i,1);
+  saveVar();
+  renderVariaveis();
+}
+
+function totalVar(m){return variaveis.filter(v=>v.mes===m).reduce((s,v)=>s+v.val,0);}
+
+function renderVariaveis(){
+  const m=getMes();
+  const doMes=variaveis.map((v,i)=>({...v,i})).filter(v=>v.mes===m);
+  const el=document.getElementById('list-variaveis');
+  if(!doMes.length){
+    el.innerHTML=`<div style="font-size:13px;color:var(--text3);padding:10px 0">Nenhum gasto variável registrado em ${M[m]}.</div>`;
+    document.getElementById('var-total-row').innerHTML='';
+    return;
+  }
+  // group by cat
+  const byCat={};
+  doMes.forEach(v=>{if(!byCat[v.cat])byCat[v.cat]=[];byCat[v.cat].push(v);});
+  el.innerHTML=Object.entries(byCat).map(([cat,items])=>`
+    <div class="group-lbl">${cat}</div>
+    ${items.map(v=>`<div class="prow">
+      <div class="prow-top">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="prow-name">${v.desc}</span>
+            ${v.cartao?`<span class="badge" style="${cartaoBadge[v.cartao]||'background:#888;color:#fff'}">${v.cartao}</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="prow-val">${fmt(v.val)}</span>
+          <button onclick="delVariavel(${v.i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;line-height:1;padding:0" title="Remover">×</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  `).join('');
+  const tot=totalVar(m);
+  document.getElementById('var-total-row').innerHTML=`<div class="total-row"><span class="total-label">Total variáveis em ${M[m]}</span><span class="total-val">${fmt(tot)}</span></div>`;
+}
+
+function renderTagarela(){
+  const m=getMes();
+  // PGFN tributários = todos exceto PGFN pessoal
+  const pgfnTag=pgfn.filter(p=>p.nome!=='PGFN pessoal');
+  const profTag=[
+    {nome:'Contador',val:200,cat:'Profissional'},
+    {nome:'GPS',     val:178,cat:'Profissional'},
+  ];
+  const totPgfn=pgfnTag.reduce((s,p)=>pAtivo(p,m)?s+p.val:s,0);
+  const totProf=profTag.reduce((s,p)=>s+p.val,0);
+  const totTag=totPgfn+totProf;
+
+  document.getElementById('tagarela-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Parcelamentos tributários</div><div class="metric-value red">${fmt(totPgfn)}</div></div>
+    <div class="metric"><div class="metric-label">Custos profissionais</div><div class="metric-value amber">${fmt(totProf)}</div></div>
+    <div class="metric"><div class="metric-label">Total Tagarela em ${M[m]}</div><div class="metric-value red">${fmt(totTag)}</div></div>
+  `;
+
+  document.getElementById('list-tag-pgfn').innerHTML=pgfnTag.map(p=>{
+    const a=pAtivo(p,m),pn=pNum(p,m),sd=pSaldo(p,m),pr=pProg(p,m);
+    return `<div class="prow">
+      <div class="prow-top">
+        <div>
+          <div class="prow-name">${p.nome}</div>
+          <div class="prow-sub">${a?(p.total?`parcela ${pn}/${p.total} em ${M[m]}`:`em andamento`):'encerrado'}</div>
+          ${a?`<div class="prow-saldo">${sd!==null?'saldo devedor: '+fmt(sd):'saldo indefinido'}</div>`:''}
+        </div>
+        <span class="prow-val">${a?fmt(p.val):'—'}</span>
+      </div>
+      ${pr!==null?`<div class="pbar-wrap">${pb(pr,'#993C1D')}<span class="pbar-pct">${pr}%</span></div>`:''}
+    </div>`;
+  }).join('')+
+  `<div class="total-row"><span class="total-label">Total parcelamentos em ${M[m]}</span><span class="total-val">${fmt(totPgfn)}</span></div>`;
+
+  document.getElementById('list-tag-prof').innerHTML=profTag.map(p=>irow(p.nome,p.cat,p.val)).join('')+
+  `<div class="total-row"><span class="total-label">Total profissional</span><span class="total-val">${fmt(totProf)}</span></div>`;
+}
+
+// Pendências Simples Nacional — 7% sobre rendas por mês (jan=0 .. dez=11)
+// Não somam ao painel de gastos — apenas controle
+const TAXA=0.07;
+const pendMeses=[
+  // Jan: DGBB + Mais Goiás R$3.000 + Escola de Gente
+  {mes:'Janeiro',  fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:3000},{n:'Escola de Gente',v:1250}]},
+  // Fev: + Mais Goiás R$3.333,33
+  {mes:'Fevereiro',fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:3333.33},{n:'Escola de Gente',v:1250}]},
+  // Mar–Abr: Mais Goiás R$5.000
+  {mes:'Março',    fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:5000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Abril',    fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:5000},{n:'Escola de Gente',v:1250}]},
+  // Mai: + extra R$300
+  {mes:'Maio',     fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:5000},{n:'Mais Goiás (extra)',v:300},{n:'Escola de Gente',v:1250}]},
+  // Jun: Mais Goiás R$3.000 (último mês)
+  {mes:'Junho',    fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:3000},{n:'Escola de Gente',v:1250}]},
+  // Jul–Dez: sem Mais Goiás
+  {mes:'Julho',    fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Agosto',   fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Setembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Outubro',  fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Novembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Dezembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+];
+const pendVal=idx=>{const p=pendMeses[idx];return p?p.fontes.reduce((s,f)=>s+f.v,0)*TAXA:0;};
+const pendAcum=idx=>pendMeses.slice(0,idx+1).reduce((s,_,i)=>s+pendVal(i),0);
+
+// Protestos Receita Federal — apenas controle, não somam ao painel
+const protestos=[
+  {nome:'Protesto Receita — PF',      val:481.00,   tipo:'Pessoal'},
+  {nome:'Protesto Receita — Tagarela',val:240.50,   tipo:'Empresa'},
+];
+
+function renderPendencias(){
+  const mSel=getMes();
+  const mIdx=mSel+4;
+  const vMes=pendVal(mIdx);
+  const vAcum=pendAcum(mIdx);
+  const vTotal=pendAcum(11);
+  const vProtestos=protestos.reduce((s,p)=>s+p.val,0);
+
+  document.getElementById('pend-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Simples em ${pendMeses[mIdx].mes}</div><div class="metric-value amber">${fmt(vMes)}</div></div>
+    <div class="metric"><div class="metric-label">Acumulado jan–${pendMeses[mIdx].mes.substring(0,3)}</div><div class="metric-value red">${fmt(vAcum)}</div></div>
+    <div class="metric"><div class="metric-label">Total anual projetado</div><div class="metric-value" style="color:var(--text2)">${fmt(vTotal)}</div></div>
+    <div class="metric"><div class="metric-label">Protestos em aberto</div><div class="metric-value red">${fmt(vProtestos)}</div></div>
+  `;
+
+  document.getElementById('list-pendencias').innerHTML=
+    pendMeses.map((p,i)=>{
+      const base=p.fontes.reduce((s,f)=>s+f.v,0);
+      const imposto=base*TAXA;
+      const acum=pendAcum(i);
+      const isCurrent=i===mIdx;
+      const isPast=i<mIdx;
+      return `<div class="prow" style="${isCurrent?'background:var(--amber-bg);border-radius:6px;padding:8px;margin:4px -4px':''}">
+        <div class="prow-top">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="prow-name" style="${isCurrent?'color:var(--amber)':isPast?'color:var(--text3)':''}">${p.mes}</span>
+              ${isCurrent?`<span class="badge badge-amber">mês atual</span>`:''}
+              ${isPast?`<span style="font-size:10px;color:var(--text3)">✓ passado</span>`:''}
+            </div>
+            <div class="prow-sub">Base: ${p.fontes.map(f=>`${f.n} ${fmt(f.v)}`).join(' + ')} = ${fmt(base)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="prow-val" style="color:var(--amber)">${fmt(imposto)}</div>
+            <div style="font-size:10px;color:var(--text3)">acum: ${fmt(acum)}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')+
+    `<div class="total-row"><span class="total-label">Total anual (jan–dez)</span><span class="total-val" style="color:var(--amber)">${fmt(vTotal)}</span></div>`;
+
+  // Protestos
+  document.getElementById('list-protestos').innerHTML=
+    protestos.map(p=>`
+      <div class="prow">
+        <div class="prow-top">
+          <div>
+            <div class="prow-name">${p.nome}</div>
+            <div class="prow-sub">${p.tipo} · em aberto</div>
+          </div>
+          <span class="prow-val" style="color:var(--red)">${fmt(p.val)}</span>
+        </div>
+      </div>`).join('')+
+    `<div class="total-row"><span class="total-label">Total protestos</span><span class="total-val" style="color:var(--red)">${fmt(vProtestos)}</span></div>`;
+}
+
+// Cirurgia — total R$34.900 · quitação até 01/05/2027
+// Entrada paga: R$3.490 em 26/06/2026
+// Parcelas: 11x R$500 de jul/2026 a mai/2027
+// Saldo após entrada: R$34.900 - R$3.490 = R$31.410
+// Parcelas de R$500 cobrem R$5.500 → saldo restante após parcelas: R$25.910
+const cirurgia = {
+  total: 34900,
+  entrada: { val: 3490, data: '26/06/2026', pago: true },
+  parcelas: { val: 500, total: 11, iniciaM: 2 }, // m=2 = julho
+};
+function cirSaldoApos(m){
+  // saldo devedor após pagar a parcela do mês m
+  const pagas = m < cirurgia.parcelas.iniciaM ? 0
+    : Math.min(m - cirurgia.parcelas.iniciaM + 1, cirurgia.parcelas.total);
+  return Math.max(0, cirurgia.total - cirurgia.entrada.val - pagas * cirurgia.parcelas.val);
+}
+function cirParcAtiva(m){
+  return m >= cirurgia.parcelas.iniciaM &&
+    (m - cirurgia.parcelas.iniciaM + 1) <= cirurgia.parcelas.total;
+}
+function cirParcNum(m){ return m - cirurgia.parcelas.iniciaM + 1; }
+function cirProg(m){
+  const pagas = m < cirurgia.parcelas.iniciaM ? 0
+    : Math.min(m - cirurgia.parcelas.iniciaM + 1, cirurgia.parcelas.total);
+  const totalPago = cirurgia.entrada.val + pagas * cirurgia.parcelas.val;
+  return Math.min(100, Math.round((totalPago / cirurgia.total) * 100));
+}
+
+function renderCirurgia(){
+  const m = getMes();
+  const saldo = cirSaldoApos(m);
+  const totalPago = cirurgia.entrada.val +
+    Math.min(Math.max(0, m - cirurgia.parcelas.iniciaM + 1), cirurgia.parcelas.total) * cirurgia.parcelas.val;
+  const prog = cirProg(m);
+  const parcAtiva = cirParcAtiva(m);
+  const parcNum = parcAtiva ? cirParcNum(m) : null;
+
+  document.getElementById('cir-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Total da cirurgia</div><div class="metric-value red">${fmt(cirurgia.total)}</div></div>
+    <div class="metric"><div class="metric-label">Já pago</div><div class="metric-value green">${fmt(totalPago)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo devedor</div><div class="metric-value amber">${fmt(saldo)}</div></div>
+    <div class="metric"><div class="metric-label">Progresso</div><div class="metric-value" style="color:var(--text2)">${prog}%</div></div>
+  `;
+
+  // linha do tempo
+  const itens = [
+    { label: 'Entrada', sub: 'Pago em 26/06/2026', val: cirurgia.entrada.val, pago: true, isMes: false },
+    ...Array.from({length: cirurgia.parcelas.total}, (_,i) => {
+      const mesIdx = cirurgia.parcelas.iniciaM + i; // índice no seletor (0=Mai)
+      const nomeMes = mesIdx <= 7 ? M[mesIdx] : ['Jan','Fev','Mar','Abr','Mai'][mesIdx - 8];
+      const ano = mesIdx <= 7 ? '2026' : '2027';
+      const pago = mesIdx < m || (mesIdx === m && mesIdx <= 7);
+      return {
+        label: `Parcela ${i+1}/11 — ${nomeMes}/${ano}`,
+        sub: `R$ ${fmt(cirurgia.parcelas.val)}`,
+        val: cirurgia.parcelas.val,
+        pago,
+        isMes: mesIdx === m,
+      };
+    }),
+  ];
+
+  document.getElementById('list-cirurgia').innerHTML =
+    itens.map(it => `<div class="prow" style="${it.isMes?'background:var(--amber-bg);border-radius:6px;padding:8px;margin:4px -4px':''}">
+      <div class="prow-top">
+        <div>
+          <div class="prow-name" style="${it.isMes?'color:var(--amber)':it.pago?'color:var(--text3)':''}">${it.label}</div>
+          <div class="prow-sub">${it.isMes?'mês atual · ':it.pago?'✓ pago · ':''}${it.sub}</div>
+        </div>
+        <span class="prow-val" style="${it.pago?'color:#2D6A35':''}">${fmt(it.val)}</span>
+      </div>
+    </div>`).join('') +
+    `<div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+      ${pb(prog,'#C44070')}
+      <span class="pbar-pct">${prog}%</span>
+    </div>
+    <div class="total-row"><span class="total-label">Saldo devedor em ${M[Math.min(m,7)]}</span><span class="total-val" style="color:var(--amber)">${fmt(saldo)}</span></div>`;
+}
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const tabs=['geral','fixos','pessoal','assinaturas','parcelas','tagarela','pendencias','variaveis','cirurgia','stella'];
+  document.querySelectorAll('.tab')[tabs.indexOf(t)].classList.add('active');
+  document.getElementById('sec-'+t).classList.add('active');
+  if(t==='variaveis')renderVariaveis();
+  if(t==='tagarela')renderTagarela();
+  if(t==='pendencias')renderPendencias();
+  if(t==='cirurgia')renderCirurgia();
+}
+
+const catMap={'Software':'badge-blue','Streaming':'badge-purple','Saúde':'badge-green','Estética':'badge-pink',
+  'Seguro':'badge-gray','Profissional':'badge-gray','Alimentação':'badge-amber','Moradia':'badge-blue',
+  'Higiene':'badge-teal','Comunicação':'badge-blue'};
+const badge=(cat)=>`<span class="badge ${catMap[cat]||'badge-gray'}">${cat}</span>`;
+const pb=(pct,col)=>`<div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div>`;
+
+function irow(nome,cat,val){
+  return `<div class="irow"><div><div class="prow-name">${nome}</div><div class="prow-sub">${cat}</div></div>${badge(cat)}<span class="prow-val">${fmt(val)}</span></div>`;
+}
+
+const cartaoBadge={
+  'Nubank':'background:#820AD1;color:#fff',
+  'Neo':'background:#00B7B2;color:#fff',
+  'MercadoLivre':'background:#FFE600;color:#333',
+  'Leide':'background:#5B2A9B;color:#fff',
+};
+
+function compraBlock(c,m,col){
+  const a=cAtivo(c,m),pn=cPNum(c,m),sd=cSaldo(c,m),pr=cProg(c,m),rest=Math.max(0,c.total-pn);
+  const ctag=c.cartao?`<span class="badge" style="${cartaoBadge[c.cartao]||'background:#888;color:#fff'}">${c.cartao}</span>`:'';
+  return `<div class="prow">
+    <div class="prow-top">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="prow-name">${c.nome}</span>${ctag}
+        </div>
+        <div class="prow-sub">${a?`parcela ${pn}/${c.total} · ${rest} restante(s)`:'quitado'}</div>
+        ${a?`<div class="prow-saldo">saldo devedor: ${fmt(sd)}</div>`:''}
+      </div>
+      <span class="prow-val" style="${a?'':'color:#2D6A35'}">${a?fmt(c.val):'✓ quitado'}</span>
+    </div>
+    ${a?`<div class="pbar-wrap">${pb(pr,col)}<span class="pbar-pct">${pr}%</span></div>`:''}
+  </div>`;
+}
+
+function totalRow(label,val,green){
+  return `<div class="total-row"><span class="total-label">${label}</span><span class="total-val" style="${green?'color:#2D6A35':''}">${green?'+ ':''} ${fmt(val)}</span></div>`;
+}
+
+function renderGeral(){
+  const m=getMes();
+  const renda=rendaFixa(m);
+  const tc=totalCred(m),tl=totalLeide(m),tco=totalComp(m);
+  const ta=totalAssin(m),tf=totalFixos(),tpe=totalPes(),ts=totalStellaG(m),tpt=totalPontuais(m);
+  const pgfnTag=pgfn.filter(p=>p.nome!=='PGFN pessoal');
+  const tTag=pgfnTag.reduce((s,p)=>pAtivo(p,m)?s+p.val:s,0)+200+178;
+  const tPgfnPes=pgfnPesVal(m);
+  const tg=tTag+tPgfnPes+tl+tco+ta+tf+tpe+ts+tpt;
+  const tliq=tg-tc,saldo=renda-tliq;
+  const pct=v=>Math.round((v/(tg||1))*100);
+
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Renda em ${M[m]}</div><div class="metric-value green">${fmt(renda)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos brutos</div><div class="metric-value red">${fmt(tg)}</div></div>
+    <div class="metric"><div class="metric-label">Créditos do mês</div><div class="metric-value green">+ ${fmt(tc)}</div></div>
+    <div class="metric"><div class="metric-label">Saldo livre</div><div class="metric-value ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
+  `;
+
+  const cats=[
+    {l:'Fixos (estrutura)',    v:tf,       c:'#185FA5'},
+    {l:'Pessoal',              v:tpe,      c:'#BA7517'},
+    {l:'Assinaturas',          v:ta,       c:'#534AB7'},
+    {l:'Tagarela (empresa)',   v:tTag,     c:'#993C1D'},
+    {l:'PGFN pessoal',         v:tPgfnPes, c:'#C44040'},
+    {l:'Cartão Leide',         v:tl,       c:'#5B2A9B'},
+    {l:'Demais parcelas',      v:tco,      c:'#C45020'},
+    {l:'Stella (bruto)',       v:ts,       c:'#C44070'},
+    ...(tpt>0?[{l:'Gastos pontuais',v:tpt,c:'#5A8A3A'}]:[]),
+  ];
+
+  document.getElementById('card-dist').innerHTML=`
+    <div class="card-title" style="margin-bottom:14px">Distribuição em ${M[m]}</div>
+    ${cats.map(c=>`<div class="dist-item">
+      <div class="dist-top"><span>${c.l}</span><span class="dist-val">${fmt(c.v)} (${pct(c.v)}%)</span></div>
+      ${pb(pct(c.v),c.c)}
+    </div>`).join('')}
+    ${totalRow('Total bruto',tg,false)}
+    <div class="total-row"><span class="total-label" style="color:#2D6A35">Créditos recebidos</span><span class="total-val" style="color:#2D6A35">− ${fmt(tc)}</span></div>
+    ${totalRow('Custo líquido',tliq,false)}
+  `;
+}
+
+function renderFixos(){
+  document.getElementById('list-fixos').innerHTML=fixos.map(f=>irow(f.nome,f.cat,f.val)).join('')+
+    totalRow('Total estrutura fixa',totalFixos(),false);
+}
+
+function renderPessoal(){
+  const tF=pessoalFixo.reduce((s,p)=>s+p.val,0),tB=pessoalBem.reduce((s,p)=>s+p.val,0);
+  document.getElementById('list-pessoal-fixo').innerHTML=pessoalFixo.map(p=>irow(p.nome,p.cat,p.val)).join('')+
+    totalRow('Subtotal',tF,false);
+  document.getElementById('list-pessoal-bem').innerHTML=pessoalBem.map(p=>irow(p.nome,p.cat,p.val)).join('')+
+    totalRow('Total pessoal',tF+tB,false);
+}
+
+function renderAssinaturas(){
+  const m=getMes();
+  const chatTotal=chatgptTotal(), chatMeu=chatgptMeu();
+  document.getElementById('list-assinaturas').innerHTML=assinaturas.map(a=>{
+    const inativo=a.encerraM!==undefined&&m>a.encerraM;
+    const val=a.dinamico?chatMeu:a.mudaM!==undefined?(m>=a.mudaM?a.val:a.valAntes):a.val;
+    const mudou=a.mudaM!==undefined&&m>=a.mudaM;
+    const nota=a.dinamico
+      ? `20 USD × R$ ${usdBrl} = ${fmt(chatTotal)} · Fábio R$25 + Paloma R$25 + Luana R$25 → seu custo: ${fmt(chatMeu)}`
+      : (a.nota||(mudou?`era ${fmt(a.valAntes)} · reajustado a partir de jul/2026`:a.cat));
+    return `<div class="irow" style="${inativo?'opacity:0.4;text-decoration:line-through':''}">
+      <div>
+        <div class="prow-name">${a.nome}${inativo?' <span style="font-size:10px;color:#8B2020;text-decoration:none">(encerrado)</span>':''}</div>
+        <div class="prow-sub" style="white-space:normal;line-height:1.4;text-decoration:none">${nota}</div>
+      </div>
+      <span class="badge ${catMap[a.cat]||'badge-gray'}">${a.cat}</span>
+      <span class="prow-val">${inativo?'—':fmt(val)}</span>
+    </div>`;
+  }).join('')+
+  `<div class="group-lbl" style="margin-top:8px">Créditos de assinaturas compartilhadas</div>
+   <div class="prow"><div class="prow-top"><div><div class="prow-name" style="font-size:12px">Microsoft — Luana</div></div><span class="prow-val" style="color:#2D6A35;font-size:12px">+ ${fmt(15)}</span></div></div>
+   <div class="prow"><div class="prow-top"><div><div class="prow-name" style="font-size:12px">ChatGPT — Fábio</div></div><span class="prow-val" style="color:#2D6A35;font-size:12px">+ ${fmt(25)}</span></div></div>
+   <div class="prow"><div class="prow-top"><div><div class="prow-name" style="font-size:12px">ChatGPT — Paloma</div></div><span class="prow-val" style="color:#2D6A35;font-size:12px">+ ${fmt(25)}</span></div></div>
+   <div class="prow"><div class="prow-top"><div><div class="prow-name" style="font-size:12px">ChatGPT — Luana</div></div><span class="prow-val" style="color:#2D6A35;font-size:12px">+ ${fmt(25)}</span></div></div>
+   <div class="total-row"><span class="total-label" style="color:#2D6A35">Total créditos de assinaturas</span><span class="total-val" style="color:#2D6A35">+ ${fmt(90)}</span></div>
+  ${totalRow('Total assinaturas (seu custo)',totalAssin(m),false)}`;
+}
+
+function renderParcelas(){
+  const m=getMes();
+
+  document.getElementById('list-pgfn').innerHTML=pgfn.map(p=>{
+    const a=pAtivo(p,m),pn=pNum(p,m),pr=pProg(p,m);
+    // PGFN pessoal: usa valores dinâmicos
+    const val  = p.dinamicoPes ? pgfnPesVal(m)   : p.val;
+    const sd   = p.dinamicoPes ? pgfnPesSaldo(m) : pSaldo(p,m);
+    const prog = p.dinamicoPes ? pgfnPesProg(m)  : pr;
+    const sdTxt= sd!==null ? 'saldo devedor: '+fmt(sd) : 'saldo indefinido';
+    return `<div class="prow">
+      <div class="prow-top">
+        <div>
+          <div class="prow-name">${p.nome}</div>
+          <div class="prow-sub">${a?(p.total?`parcela ${pn}/${p.total} em ${M[m]}`:`em andamento`):'encerrado'}${p.nota?` · <em>${p.nota}</em>`:''}</div>
+          ${a?`<div class="prow-saldo">${sdTxt}</div>`:''}
+        </div>
+        <span class="prow-val">${a?fmt(val):'—'}</span>
+      </div>
+      ${prog!==null?`<div class="pbar-wrap">${pb(prog,'#185FA5')}<span class="pbar-pct">${prog}%</span></div>`:''}
+    </div>`;
+  }).join('')+totalRow('Total PGFN/RFB em '+M[m],totalPgfn(m),false);
+
+  document.getElementById('list-leide').innerHTML=
+    leide.map(c=>compraBlock(c,m,'#5B2A9B')).join('')+
+    totalRow('Total Cartão Leide em '+M[m],totalLeide(m),false);
+
+  document.getElementById('list-compras').innerHTML=
+    compras.map(c=>compraBlock(c,m,'#C45020')).join('')+
+    totalRow('Total demais parcelas em '+M[m],totalComp(m),false);
+
+  const abatDoMes=abatimentos.filter(a=>(a.vals[m]||0)>0);
+  const confirmados=abatDoMes.filter(a=>!a.previsto);
+  const previstos=abatDoMes.filter(a=>a.previsto);
+  document.getElementById('list-creditos').innerHTML=
+    `<div class="prow"><div class="prow-top">
+      <div><div class="prow-name">Pensão — pai da Stella</div><div class="prow-sub">Recorrente mensal</div></div>
+      <span class="prow-val" style="color:#2D6A35">+ ${fmt(pensaoVals[m])}</span>
+    </div></div>`+
+    (confirmados.length?`<div class="group-lbl">Abatimentos de repasse</div>`+
+      confirmados.map(a=>`<div class="prow"><div class="prow-top">
+        <div class="prow-name" style="font-size:12px">${a.desc}</div>
+        <span class="prow-val" style="color:#2D6A35;font-size:12px">+ ${fmt(a.vals[m])}</span>
+      </div></div>`).join(''):'') +
+    (previstos.length?`<div class="group-lbl" style="color:#BA7517">Créditos previstos</div>`+
+      previstos.map(a=>{
+        const parcAtual=a.vals.slice(0,m).filter(x=>x>0).length+1;
+        const totalParc=a.vals.filter(x=>x>0).length;
+        return `<div class="prow"><div class="prow-top">
+          <div>
+            <div class="prow-name" style="font-size:12px">${a.desc}</div>
+            <div class="prow-sub" style="font-size:10px">parcela ${parcAtual}/${totalParc} · aguardando recebimento</div>
+          </div>
+          <span class="prow-val" style="color:#BA7517;font-size:12px">⏳ + ${fmt(a.vals[m])}</span>
+        </div></div>`;
+      }).join(''):'') +
+    `<div class="total-row"><span class="total-label" style="color:#2D6A35">Total créditos em ${M[m]}</span><span class="total-val" style="color:#2D6A35">+ ${fmt(totalCred(m))}</span></div>`;
+}
+
+function renderStella(){
+  const m=getMes(),bruto=totalStellaG(m),liq=totalStellaL(m);
+  const tRec=stellaRec.reduce((s,i)=>s+i.val,0);
+
+  document.getElementById('stella-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Gasto bruto Stella</div><div class="metric-value pink">${fmt(bruto)}</div></div>
+    <div class="metric"><div class="metric-label">Pensão recebida</div><div class="metric-value green">+ ${fmt(pensao)}</div></div>
+    <div class="metric"><div class="metric-label">Custo líquido</div><div class="metric-value ${liq>0?'amber':'green'}">${fmt(liq)}</div></div>
+    <div class="metric"><div class="metric-label">% da renda</div><div class="metric-value amber">${((liq/rendaFixa(m))*100).toFixed(1)}%</div></div>
+  `;
+
+  document.getElementById('list-stella-resumo').innerHTML=`
+    <div class="irow"><div><div class="prow-name">Recorrentes (produtos)</div><div class="prow-sub">Higiene, saúde, alimentação</div></div><span class="badge badge-pink">Gasto</span><span class="prow-val">${fmt(tRec)}</span></div>
+    <div class="irow"><div><div class="prow-name">Pensão do pai</div><div class="prow-sub">Crédito fixo mensal</div></div><span class="badge badge-green">Crédito</span><span class="prow-val" style="color:#2D6A35">− ${fmt(pensao)}</span></div>
+    ${totalRow('Custo líquido em '+M[m],liq,false)}
+  `;
+
+  const cm={'Saúde':'badge-green','Higiene':'badge-teal','Alimentação':'badge-amber'};
+  document.getElementById('list-stella-rec').innerHTML=stellaRec.map(r=>
+    `<div class="irow"><div><div class="prow-name">${r.nome}</div><div class="prow-sub">${r.cat}</div></div><span class="badge ${cm[r.cat]||'badge-gray'}">${r.cat}</span><span class="prow-val">${fmt(r.val)}</span></div>`
+  ).join('')+totalRow('Subtotal recorrentes',tRec,false);
+  // Gastos pontuais — agrupados por mês
+  const doMes=pontuais.filter(p=>p.vencMes===m);
+  const outrosMeses=pontuais.filter(p=>p.vencMes!==m);
+  const gruposMeses=[...new Set(outrosMeses.map(p=>p.vencMes))].sort((a,b)=>a-b);
+  function pRow(p){
+    const isVenc=p.vencMes===m&&!p.pago;
+    const status=p.pago?`<span style="color:#2D6A35;font-weight:600">✓ ${p.data}</span>`
+      :(isVenc?`<span style="color:#8B2020;font-weight:600">⚠ vence hoje (${p.data})</span>`
+      :`vence em ${p.data}`);
+    return `<div class="prow">
+      <div class="prow-top">
+        <div><div class="prow-name" style="font-size:12px">${p.nome}</div>
+        <div class="prow-sub">${p.cat} · ${status}</div></div>
+        <span class="prow-val" style="font-size:12px;${p.pago?'color:#2D6A35':isVenc?'color:#8B2020':''}">${fmt(p.val)}</span>
+      </div></div>`;
+  }
+  document.getElementById('list-pontuais').innerHTML=
+    (doMes.length?`<div class="group-lbl">${M[m]} — ${doMes.filter(p=>p.pago).length} pago(s) · ${doMes.filter(p=>!p.pago).length} pendente(s)</div>`+doMes.map(pRow).join(''):'<div style="font-size:13px;color:var(--text3);padding:8px 0">Nenhum gasto pontual em '+M[m]+'.</div>')+
+    gruposMeses.map(gm=>`<div class="group-lbl" style="margin-top:8px;color:var(--text3)">${M[gm]||gm} — histórico</div>`+
+      outrosMeses.filter(p=>p.vencMes===gm).map(pRow).join('')).join('')+
+  `<div class="total-row"><span class="total-label">Pendente em ${M[m]}</span><span class="total-val">${fmt(totalPontuais(m))}</span></div>`;
+}
+
+function renderAll(){renderGeral();renderFixos();renderPessoal();renderAssinaturas();renderParcelas();renderTagarela();renderPendencias();renderVariaveis();renderCirurgia();renderStella();}
+renderAll();
+</script>
+</body>
+</html>
