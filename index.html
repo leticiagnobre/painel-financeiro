@@ -274,8 +274,9 @@ const pensao=486;
 // Renda mensal por mês [Mai..Dez]
 // Mai: 8000+5000+300+1250 = 14550
 // Jun: 8000+3000+1250 = 12250
-// Jul–Dez: 8000+1250 = 9250
-const rendas=[14550, 12250, 9250, 9250, 9250, 9250, 9250, 9250];
+// Jul: 8000+1250 = 9250
+// Ago em diante: DGBB 8400+1250 = 9650 (aumento de R$400 na DGBB)
+const rendas=[14550, 12250, 9250, 9650, 9650, 9650, 9650, 9650];
 const rendaFixa=m=>m!==undefined?rendas[m]:rendas[0];
 
 // PGFN — parcAbril = nº parcela em abril; maio = parcAbril+1
@@ -646,11 +647,11 @@ const pendMeses=[
   {mes:'Junho',    fontes:[{n:'DGBB',v:8000},{n:'Mais Goiás',v:3000},{n:'Escola de Gente',v:1250}]},
   // Jul–Dez: sem Mais Goiás
   {mes:'Julho',    fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
-  {mes:'Agosto',   fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
-  {mes:'Setembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
-  {mes:'Outubro',  fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
-  {mes:'Novembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
-  {mes:'Dezembro', fontes:[{n:'DGBB',v:8000},{n:'Escola de Gente',v:1250}]},
+  {mes:'Agosto',   fontes:[{n:'DGBB',v:8400},{n:'Escola de Gente',v:1250}]},
+  {mes:'Setembro', fontes:[{n:'DGBB',v:8400},{n:'Escola de Gente',v:1250}]},
+  {mes:'Outubro',  fontes:[{n:'DGBB',v:8400},{n:'Escola de Gente',v:1250}]},
+  {mes:'Novembro', fontes:[{n:'DGBB',v:8400},{n:'Escola de Gente',v:1250}]},
+  {mes:'Dezembro', fontes:[{n:'DGBB',v:8400},{n:'Escola de Gente',v:1250}]},
 ];
 const pendVal=idx=>{const p=pendMeses[idx];return p?p.fontes.reduce((s,f)=>s+f.v,0)*TAXA:0;};
 const pendAcum=idx=>pendMeses.slice(0,idx+1).reduce((s,_,i)=>s+pendVal(i),0);
