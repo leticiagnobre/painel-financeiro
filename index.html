@@ -377,6 +377,9 @@ const compras=[
   {nome:'Shopee 1/3 b',        iniciaM:3, total:3, val:76.20,  cartao:'Nubank'},
   {nome:'Mercado Livre 3/6',   iniciaM:1, total:6, val:23.33,  cartao:'Nubank'},
   {nome:'Mercado Livre 3/4',   iniciaM:1, total:4, val:8.49,   cartao:'Nubank'},
+  // Novas compras agosto+
+  {nome:'Ali Express',         iniciaM:3, total:6, val:193.85, cartao:'Nubank', obs:'termina jan/2027'},
+  {nome:'Mercado Livre 5x',    iniciaM:3, total:5, val:123.57, cartao:'Nubank'},
 ];
 // parcAbril=0 → abril foi a 1ª parcela → maio é a 2ª
 // iniciaM: mês (0=Mai) em que começa (para itens sem histórico em abril)
@@ -416,6 +419,14 @@ const abatimentos=[
   {desc:'Leide — acerto agosto',        vals:[0,  0,  0, 80,  0,  0, 0, 0]},
   {desc:'Drogasil — abat. ago',         vals:[0,  0,  0,138.66,0, 0, 0, 0]},
   {desc:'Frajola — abat. ago',          vals:[0,  0,  0,105,   0, 0, 0, 0]},
+  // Créditos a receber da Leide
+  {desc:'Materiais elétricos — Leide',  vals:[0,  0,  0, 64.16, 64.16, 64.16, 64.16, 0], previsto:true},
+  {desc:'Remédios Drogasil — Leide',    vals:[0,  0,  0,109,   0, 0, 0, 0], previsto:true},
+  {desc:'Pilhas e rem. veterinários',   vals:[0,  0,  0, 38.66, 38.66, 38.66, 0, 0], previsto:true},
+  // A pagar para Leide (entram como débitos — valores negativos nos abatimentos)
+  {desc:'Conserto carro — pagar Leide', vals:[0,  0,  0,-374, -374, -374, -374, -374], previsto:false, debito:true},
+  {desc:'Pizza — pagar Leide',          vals:[0,  0,  0,-211.86, 0, 0, 0, 0], debito:true},
+  {desc:'Tecidos — pagar Leide',        vals:[0,  0,  0,-30, 0, 0, 0, 0], debito:true},
 ];
 const pensaoVals=[486,486,486,486,486,486,486,486];
 
@@ -500,7 +511,8 @@ const stellaRec=[
 ];
 
 const getMes=()=>parseInt(document.getElementById('mes-sel').value);
-const totalCred=m=>pensaoVals[m]+abatimentos.reduce((s,a)=>s+(a.vals[m]||0),0);
+const totalCred=m=>pensaoVals[m]+abatimentos.filter(a=>!a.debito).reduce((s,a)=>s+(a.vals[m]||0),0);
+const totalDebLeide=m=>abatimentos.filter(a=>a.debito).reduce((s,a)=>s+Math.abs(a.vals[m]||0),0);
 const totalPgfn=m=>pgfn.reduce((s,p)=>pAtivo(p,m)?s+(p.dinamicoPes?pgfnPesVal(m):p.val):s,0);
 const totalLeide=m=>leide.reduce((s,c)=>cAtivo(c,m)?s+c.val:s,0);
 const totalComp=m=>compras.reduce((s,c)=>cAtivo(c,m)?s+c.val:s,0);
@@ -950,9 +962,10 @@ function renderParcelas(){
     compras.map(c=>compraBlock(c,m,'#C45020')).join('')+
     totalRow('Total demais parcelas em '+M[m],totalComp(m),false);
 
-  const abatDoMes=abatimentos.filter(a=>(a.vals[m]||0)>0);
+  const abatDoMes=abatimentos.filter(a=>(a.vals[m]||0)!==0&&!a.debito);
   const confirmados=abatDoMes.filter(a=>!a.previsto);
   const previstos=abatDoMes.filter(a=>a.previsto);
+  const debitosDoMes=abatimentos.filter(a=>a.debito&&(a.vals[m]||0)!==0);
   document.getElementById('list-creditos').innerHTML=
     `<div class="prow"><div class="prow-top">
       <div><div class="prow-name">Pensão — pai da Stella</div><div class="prow-sub">Recorrente mensal</div></div>
@@ -970,12 +983,25 @@ function renderParcelas(){
         return `<div class="prow"><div class="prow-top">
           <div>
             <div class="prow-name" style="font-size:12px">${a.desc}</div>
-            <div class="prow-sub" style="font-size:10px">parcela ${parcAtual}/${totalParc} · aguardando recebimento</div>
+            <div class="prow-sub" style="font-size:10px">${totalParc>1?`parcela ${parcAtual}/${totalParc} · `:''}aguardando recebimento</div>
           </div>
           <span class="prow-val" style="color:#BA7517;font-size:12px">⏳ + ${fmt(a.vals[m])}</span>
         </div></div>`;
       }).join(''):'') +
-    `<div class="total-row"><span class="total-label" style="color:#2D6A35">Total créditos em ${M[m]}</span><span class="total-val" style="color:#2D6A35">+ ${fmt(totalCred(m))}</span></div>`;
+    (debitosDoMes.length?`<div class="group-lbl" style="color:#8B2020">A pagar para Leide</div>`+
+      debitosDoMes.map(a=>{
+        const totalParc=a.vals.filter(x=>x!==0).length;
+        const parcAtual=a.vals.slice(0,m).filter(x=>x!==0).length+1;
+        return `<div class="prow"><div class="prow-top">
+          <div>
+            <div class="prow-name" style="font-size:12px">${a.desc.replace('— pagar Leide','')}</div>
+            <div class="prow-sub" style="font-size:10px">${totalParc>1?`parcela ${parcAtual}/${totalParc}`:''}</div>
+          </div>
+          <span class="prow-val" style="color:#8B2020;font-size:12px">− ${fmt(Math.abs(a.vals[m]))}</span>
+        </div></div>`;
+      }).join(''):'') +
+    `<div class="total-row"><span class="total-label" style="color:#2D6A35">Total créditos em ${M[m]}</span><span class="total-val" style="color:#2D6A35">+ ${fmt(totalCred(m))}</span></div>`+
+    (debitosDoMes.length?`<div class="total-row"><span class="total-label" style="color:#8B2020">Total a pagar Leide em ${M[m]}</span><span class="total-val" style="color:#8B2020">− ${fmt(totalDebLeide(m))}</span></div>`:'');
 }
 
 function renderStella(){
